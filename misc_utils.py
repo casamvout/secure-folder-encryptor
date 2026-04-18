@@ -5,6 +5,7 @@ def is_exists(path):
     else:
         return False
 def safe_delete(path):
+    # Maybe will not totally help if files are on SSD (On HDD it may work great)
     if os.path.exists(path):
         file_size = os.path.getsize(path)
         with open(path, "wb") as f:
