@@ -1,3 +1,9 @@
+﻿.idea/
 __pycache__/
 *.pyc
-*.pyo
+pass.hash
+pass.salt
+*.backup
+tmp/
+.venv/
+venv/
