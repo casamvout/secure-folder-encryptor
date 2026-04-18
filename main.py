@@ -64,7 +64,8 @@ while True:
             try:
                 decrypt_folder(password, folder)
                 print("Folder Decrypted Successful!")
-            except DecryptionError:
+            except Exception as e:
+                print(f"Decryption failed: {e}")
                 print("Data Is Corrupted!")
     else:
         sys.exit()
