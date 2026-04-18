@@ -3,14 +3,14 @@ import misc_utils
 import os
 import pathlib
 import shutil
+from tqdm import tqdm
 def encrypt_folder(password, folder):
-    total = [f for f in folder.rglob("*") if f.is_file()]
-    total = len(total)
-    curr_count = 1
+    files_list = [f for f in folder.rglob("*") if f.is_file() and f.parent.name != "backup" and f.name not in ("pass.hash", "pass.salt")]
     # salt generated automatic
     hash_password, salt = cryptolibo.hash.pbkdf2(password, length=64)
     password_len = len(password)
     while password_len < 200000:
+        # This will add a little bit of secure
         password_len = password_len * 1.5
     iteration = round(password_len)
     # we don't need salt, we just need to stretch the password
@@ -20,13 +20,12 @@ def encrypt_folder(password, folder):
     with open (fr"{folder}\pass.salt", "w") as f:
         f.write(cryptolibo.encrypt.aes_gcm(key_password, salt))
     pathlib.Path(fr"{folder}\backup").mkdir(exist_ok=True)
-    for file in list(folder.rglob("*")):
-        if not file.is_file():
-            continue
-        if file.parent.name == "backup":
-            continue
-        if file.name in ("pass.hash", "pass.salt"):
-            continue
+    if "pass.hash" in os.listdir(folder) or "pass.salt" in os.listdir(folder):
+        print("Folder is seems to already being encrypted")
+        choice_overwrite = input("You sure you want to encrypt again? (Y/n):")
+        if choice_overwrite != "Y":
+            return "folder is already encrypted"
+    for file in tqdm(files_list, desc="Encrypting", unit="file"):
         with open(file, "rb") as f:
             read_bytes = f.read()
             encrypted_bytes = cryptolibo.encrypt.chacha20_poly1305(key_password, read_bytes)
@@ -38,8 +37,5 @@ def encrypt_folder(password, folder):
         encrypted_name = cryptolibo.encrypt.aes_gcm(key_password, file.name)
         encrypted_name = encrypted_name.replace("/", "_").replace("+", "-")
         os.rename(file, file.with_name(encrypted_name))
-        print(f"\rEncrypted {curr_count}/{total} Files", end="", flush=True)
-        curr_count += 1
         misc_utils.safe_delete(fr"{folder}\backup\{file.name}.backup")
     shutil.rmtree(fr"{folder}\backup")
-    print("\n")

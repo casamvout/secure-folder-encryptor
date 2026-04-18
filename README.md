@@ -16,9 +16,10 @@ Using **secure** and **proven** algorithms:
 2. Marks files as **already decrypted** to prevent re-decryption in case the program closes during decryption.
 
 - ⚙️ Misc:
-1. **Verifyng** password before decryption
+1. **Verifying** password before decryption
 2. Masking password while typing (maskpass)
 3. Safe delete (overwrites with random data before deletion)
+4. Supports **multi thread**
 
 ## 📦 Requirements
 - Python 3.7+

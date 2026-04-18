@@ -3,10 +3,10 @@ import pathlib
 import os
 import shutil
 import misc_utils
+from tqdm import tqdm
 def decrypt_folder(password, folder):
-    curr_count = 1
-    total = [f for f in folder.rglob("*") if f.is_file()]
-    total = len(total)
+    pathlib.Path(fr"{folder}\tmp").mkdir(exist_ok=True)
+    files_list = [f for f in folder.rglob("*") if f.is_file() and f.name not in ("pass.hash", "pass.salt") and f.name not in os.listdir(fr"{folder}\tmp")]
     password_len = len(password)
     while password_len < 200000:
         password_len = password_len * 1.5
@@ -22,14 +22,7 @@ def decrypt_folder(password, folder):
         raise ValueError("Decryption Error: Passwords do not match")
     else:
         # Protection against interruption of code execution during decryption
-        pathlib.Path(fr"{folder}\tmp").mkdir(exist_ok=True)
-        for file in list(folder.rglob("*")):
-            if file.name in ("pass.hash", "pass.salt"):
-                continue
-            if not file.is_file():
-                continue
-            if file.name in os.listdir(fr"{folder}\tmp"):
-                continue
+        for file in tqdm(files_list, desc="Decrypting", unit="file"):
             with open(file, "rb") as f:
                 data = f.read()
                 decrypted_data = cryptolibo.decrypt.chacha20_poly1305(key_password, data.decode())
@@ -44,9 +37,6 @@ def decrypt_folder(password, folder):
             os.rename(file, file.with_name(decrypted_name))
             with open(fr"{folder}\tmp\{decrypted_name}", "w"):
                 pass
-            print(f"\rDecrypted {curr_count}/{total - 2} Files", end="", flush=True)
-            curr_count += 1
         misc_utils.safe_delete(fr"{folder}\pass.hash")
         misc_utils.safe_delete(fr"{folder}\pass.salt")
         shutil.rmtree(fr"{folder}\tmp")
-        print("\n")
