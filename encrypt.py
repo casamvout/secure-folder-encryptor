@@ -4,6 +4,7 @@ import os
 import pathlib
 import shutil
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 def encrypt_folder(password, folder):
     files_list = [f for f in folder.rglob("*") if f.is_file() and f.parent.name != "backup" and f.name not in ("pass.hash", "pass.salt")]
     # salt generated automatic
@@ -20,17 +21,20 @@ def encrypt_folder(password, folder):
     with open (fr"{folder}\pass.salt", "w") as f:
         f.write(cryptolibo.encrypt.aes_gcm(key_password, salt))
     pathlib.Path(fr"{folder}\backup").mkdir(exist_ok=True)
-    for file in tqdm(files_list, desc="Encrypting", unit="file"):
+
+    def process_file(file):
         with open(file, "rb") as f:
             read_bytes = f.read()
             encrypted_bytes = cryptolibo.encrypt.chacha20_poly1305(key_password, read_bytes)
         with open(fr"{folder}\backup\{file.name}.backup", "wb") as f:
             f.write(read_bytes)
         with open(file, "wb") as f:
-            # encode needed! chacha20_poly1305 always returns base64 (str)!
             f.write(encrypted_bytes.encode('utf-8'))
         encrypted_name = cryptolibo.encrypt.aes_gcm(key_password, file.name)
         encrypted_name = encrypted_name.replace("/", "_").replace("+", "-")
         os.rename(file, file.with_name(encrypted_name))
         misc_utils.safe_delete(fr"{folder}\backup\{file.name}.backup")
+
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        list(tqdm(executor.map(process_file, files_list), total=len(files_list), desc="Encrypting", unit="file"))
     shutil.rmtree(fr"{folder}\backup")

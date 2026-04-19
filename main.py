@@ -47,9 +47,7 @@ while True:
                     continue
                 else:
                     pass
-            with ThreadPoolExecutor(max_workers=6) as executor:
-                future = executor.submit(encrypt_folder, password, folder)
-                results = future.result()
+            encrypt_folder(password, folder)
             print("Folder Encrypted Successful!")
     elif choice == "2":
         while True:
@@ -72,9 +70,7 @@ while True:
                 sys.exit()
             password = maskpass.askpass("Enter Password To Decrypt:")
             try:
-                with ThreadPoolExecutor(max_workers=6) as executor:
-                    future = executor.submit(decrypt_folder, password, folder)
-                    results = future.result()
+                decrypt_folder(password, folder)
                 print("Folder Decrypted Successful!")
             except Exception as e:
                 print(f"Decryption failed: {e}")
