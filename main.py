@@ -3,7 +3,7 @@ FOLDER ENCRYPTOR
 It is safe but only suitable for HOME USE!
 """
 import pathlib
-from concurrent.futures.thread import ThreadPoolExecutor
+import os
 from tkinter import filedialog
 from concurrent.futures import ThreadPoolExecutor
 from decrypt import decrypt_folder
@@ -40,13 +40,17 @@ while True:
             if not password:
                 print("Error! Password Is Empty!")
                 continue
+            if "pass.hash" in os.listdir(folder) or "pass.salt" in os.listdir(folder):
+                print("Folder is seems to already being encrypted")
+                choice_overwrite = input("You sure you want to encrypt again? (Y/n):")
+                if choice_overwrite != "Y":
+                    continue
+                else:
+                    pass
             with ThreadPoolExecutor(max_workers=6) as executor:
                 future = executor.submit(encrypt_folder, password, folder)
                 results = future.result()
-            if results == "folder is already encrypted":
-                continue
-            else:
-                print("Folder Encrypted Successful!")
+            print("Folder Encrypted Successful!")
     elif choice == "2":
         while True:
             third_choice = input("Enter 1 To Select Folder, 2 To Enter Path, 3 To Exit:")
@@ -68,7 +72,7 @@ while True:
                 sys.exit()
             password = maskpass.askpass("Enter Password To Decrypt:")
             try:
-                with ThreadPoolExecutor(max_workers=4) as executor:
+                with ThreadPoolExecutor(max_workers=6) as executor:
                     future = executor.submit(decrypt_folder, password, folder)
                     results = future.result()
                 print("Folder Decrypted Successful!")

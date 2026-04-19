@@ -20,11 +20,6 @@ def encrypt_folder(password, folder):
     with open (fr"{folder}\pass.salt", "w") as f:
         f.write(cryptolibo.encrypt.aes_gcm(key_password, salt))
     pathlib.Path(fr"{folder}\backup").mkdir(exist_ok=True)
-    if "pass.hash" in os.listdir(folder) or "pass.salt" in os.listdir(folder):
-        print("Folder is seems to already being encrypted")
-        choice_overwrite = input("You sure you want to encrypt again? (Y/n):")
-        if choice_overwrite != "Y":
-            return "folder is already encrypted"
     for file in tqdm(files_list, desc="Encrypting", unit="file"):
         with open(file, "rb") as f:
             read_bytes = f.read()
