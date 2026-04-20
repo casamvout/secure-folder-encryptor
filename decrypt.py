@@ -8,7 +8,7 @@ from tqdm import tqdm
 def decrypt_folder(password, folder):
     pathlib.Path(fr"{folder}\tmp").mkdir(exist_ok=True)
     files_list = [f for f in folder.rglob("*") if f.is_file() and f.name not in ("pass.hash", "pass.salt") and f.name not in os.listdir(fr"{folder}\tmp")]
-    key_password, _ = cryptolibo.hash.pbkdf2(password, salt=password, length=128)
+    key_password = misc_utils.stretch_password(password, 128)
     with open(fr"{folder}\pass.hash", "r") as f:
         read_password = cryptolibo.decrypt.chacha20_poly1305(key_password, f.read())
     with open(fr"{folder}\pass.salt", "r")as f:

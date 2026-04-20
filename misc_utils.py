@@ -1,4 +1,5 @@
 import os
+from cryptoutils import cryptolibo
 def is_exists(path):
     if os.path.exists(path):
         return True
@@ -15,3 +16,6 @@ def safe_delete(path):
                 f.flush()
                 os.fsync(f.fileno())
         os.remove(path)
+def stretch_password(password, length):
+    return_data, _ =  cryptolibo.hash.pbkdf2(password, length=length, salt=password, iterations=100000)
+    return return_data

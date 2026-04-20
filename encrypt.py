@@ -12,7 +12,7 @@ def encrypt_folder(password, folder):
     password_len = len(password)
     iteration = round(password_len)
     # we don't need salt, we just need to stretch the password
-    key_password, _ = cryptolibo.hash.pbkdf2(password, salt=password, length=128)
+    key_password = misc_utils.stretch_password(password, 128)
     with open (fr"{folder}\pass.hash", "w") as f:
         f.write(cryptolibo.encrypt.chacha20_poly1305(key_password, hash_password))
     with open (fr"{folder}\pass.salt", "w") as f:
