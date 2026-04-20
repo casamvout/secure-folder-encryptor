@@ -8,16 +8,12 @@ from tqdm import tqdm
 def decrypt_folder(password, folder):
     pathlib.Path(fr"{folder}\tmp").mkdir(exist_ok=True)
     files_list = [f for f in folder.rglob("*") if f.is_file() and f.name not in ("pass.hash", "pass.salt") and f.name not in os.listdir(fr"{folder}\tmp")]
-    password_len = len(password)
-    while password_len < 200000:
-        password_len = password_len * 1.5
-    iteration = round(password_len)
-    key_password, _ = cryptolibo.hash.pbkdf2(password, salt=password, iterations=iteration, length=128)
+    key_password, _ = cryptolibo.hash.pbkdf2(password, salt=password, length=128)
     with open(fr"{folder}\pass.hash", "r") as f:
         read_password = cryptolibo.decrypt.chacha20_poly1305(key_password, f.read())
     with open(fr"{folder}\pass.salt", "r")as f:
         read_salt = cryptolibo.decrypt.aes_gcm(key_password, (f.read()))
-    hashed_password, _ = cryptolibo.hash.pbkdf2(password, bytes.fromhex(read_salt), length=64)
+    hashed_password, _ = cryptolibo.hash.argon2(password, salt=bytes.fromhex(read_salt), hash_len=64)
     if hashed_password != read_password:
         raise ValueError("Decryption Error: Passwords do not match")
     else:

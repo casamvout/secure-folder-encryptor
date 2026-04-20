@@ -8,14 +8,11 @@ from concurrent.futures import ThreadPoolExecutor
 def encrypt_folder(password, folder):
     files_list = [f for f in folder.rglob("*") if f.is_file() and f.parent.name != "backup" and f.name not in ("pass.hash", "pass.salt")]
     # salt generated automatic
-    hash_password, salt = cryptolibo.hash.pbkdf2(password, length=64)
+    hash_password, salt = cryptolibo.hash.argon2(password, hash_len=64)
     password_len = len(password)
-    while password_len < 200000:
-        # This will add a little bit of secure
-        password_len = password_len * 1.5
     iteration = round(password_len)
     # we don't need salt, we just need to stretch the password
-    key_password, _ = cryptolibo.hash.pbkdf2(password, salt=password, length=128, iterations=iteration)
+    key_password, _ = cryptolibo.hash.pbkdf2(password, salt=password, length=128)
     with open (fr"{folder}\pass.hash", "w") as f:
         f.write(cryptolibo.encrypt.chacha20_poly1305(key_password, hash_password))
     with open (fr"{folder}\pass.salt", "w") as f:

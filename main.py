@@ -5,7 +5,6 @@ It is safe but only suitable for HOME USE!
 import pathlib
 import os
 from tkinter import filedialog
-from concurrent.futures import ThreadPoolExecutor
 from decrypt import decrypt_folder
 from encrypt import encrypt_folder
 import maskpass
