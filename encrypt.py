@@ -9,8 +9,6 @@ def encrypt_folder(password, folder):
     files_list = [f for f in folder.rglob("*") if f.is_file() and f.parent.name != "backup" and f.name not in ("pass.hash", "pass.salt")]
     # salt generated automatic
     hash_password, salt = cryptolibo.hash.argon2(password, hash_len=64)
-    password_len = len(password)
-    iteration = round(password_len)
     # we don't need salt, we just need to stretch the password
     key_password = misc_utils.stretch_password(password, 128)
     with open (fr"{folder}\pass.hash", "w") as f:
