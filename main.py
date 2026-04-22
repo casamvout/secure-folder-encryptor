@@ -34,7 +34,7 @@ while True:
                     print("Error! Folder Not Found!")
                     continue
             else:
-                sys.exit()
+                break
             password = maskpass.askpass("Enter Password To Encrypt:")
             if not password:
                 print("Error! Password Is Empty!")
@@ -66,7 +66,7 @@ while True:
                     print("Error! Folder Not Found!")
                     continue
             else:
-                sys.exit()
+                break
             password = maskpass.askpass("Enter Password To Decrypt:")
             try:
                 decrypt_folder(password, folder)
